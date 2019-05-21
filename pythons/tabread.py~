@@ -1,0 +1,16 @@
+from numpy import *
+
+def tabread(infile, ncol = 6):
+    # reading a .tab athena output
+    # input: input file and column number for the analysed quantity
+    # output: (2D) x, y, and the quantity in question
+    lines = np.loadtxt(infile+".dat", comments="#", delimiter=" ", unpack=False)
+    x = lines[:,2]  ;  y = lines[:,3]  ; q = lines[:, ncol]
+
+    # reshape:
+    xun = unique(x) ; yun = unique(y)
+    nx = size(xun) ; ny = size(yun)
+
+    x=reshape(x, [nx, ny]) ; y = reshape(y, [nx, ny]) ; q= reshape(q, [nx, ny])
+
+    return x, y, q
