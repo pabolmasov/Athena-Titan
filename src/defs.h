@@ -20,7 +20,7 @@
  *  (user modified via configure) */
 
 /* Version identifier when configure was last run */
-#define CONFIGURE_DATE "Tue May 21 16:53:24 EDT 2019"
+#define CONFIGURE_DATE "Tue May 21 18:52:27 EDT 2019"
 
 /* Problem generator with which Athena is compiled */
 #define A_PROBLEM "khiso"
