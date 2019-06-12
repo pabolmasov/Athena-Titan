@@ -34,9 +34,16 @@ def MPItabread(ddir, filemask, fileno, np, ncol = 6):
     # reshape:
     xun = unique(x) ; yun = unique(y)
     nx = size(xun) ; ny = size(yun)
+
+    # restoring the grid:
+    dx = xun[1]-xun[0] ; dy = yun[1]-yun[0] # as the grid is uniform
+    kx = rint((x-xun.min())/dx) ;   ky = rint((y-yun.min())/dy)
+    i = (kx + ky * nx).astype(int) # effective number of the element
+    xnew = zeros(nx*ny) ; ynew = zeros(nx*ny) ; qnew = zeros(nx*ny)
+    xnew[i] = x[:] ; ynew[i] = y[:] ; qnew[i] = q[:]
     
-    x=transpose(reshape(x, [ny, nx])) ; y = transpose(reshape(y, [ny, nx]))
-    q=transpose(reshape(q, [ny, nx]))
+    x=reshape(xnew, [nx, ny]) ; y = reshape(ynew, [nx, ny])
+    q=reshape(qnew, [nx, ny])
 
     return x, y, q    
             
@@ -55,10 +62,10 @@ def tabread(infile, ncol = 6):
 
     return x, y, q
 
-def xfft(fileno, prefix = "khiso", permode = 4, plots = True):
+def xfft(fileno, prefix = "khiso", permode = 4, plots = True, ncol = 6):
 
     #    x, y, q = tabread("../bin/"+prefix+"{:04d}".format(fileno)+".tab", ncol = 6)
-    x, y, q = MPItabread("../bin", prefix, fileno, np = 3, ncol = 6)
+    x, y, q = MPItabread("../bin", prefix, fileno, np = 3, ncol = ncol)
     print(shape(q))
     nx = size(unique(x))
     q_f = fft.rfft(q-q.mean(), axis=0)
@@ -69,8 +76,10 @@ def xfft(fileno, prefix = "khiso", permode = 4, plots = True):
     outfile = "../bin/"+prefix+"{:04d}".format(fileno) # output file prefix
     print(outfile)
     if(plots & ifplot):
+        lev1 = q.min() ; lev2 = q.max() ; nlev = 50
+        levs = (lev2-lev1) * arange(nlev) / double(nlev-1) + lev1
         clf()
-        contourf(x, y, q)
+        contourf(x, y, q, levels = levs)
         xlabel('x') ; ylabel('y')
         savefig(outfile+".png")
         clf()
@@ -91,7 +100,7 @@ def fourier_analysis(prefix, nf, permode = 4):
     #    flist = np.sort(glob.glob(prefix+"[0-9][0-9][0-9][0-9].tab"))
         
     for k in arange(nf):
-        f, sp = xfft(k, prefix = prefix, permode = permode, plots = True)
+        f, sp = xfft(k, prefix = prefix, permode = permode, plots = False)
         if k == 0:
             nfreq = size(f)
             t2 = zeros([nf, nfreq])
@@ -110,6 +119,7 @@ def fourier_analysis(prefix, nf, permode = 4):
         subplot(212)
         plot(t2[:,permode], sp2[:,permode], label="$k = "+str(permode)+"$")
         plot(t2[:,permode*2], sp2[:,permode*2], label="$k = "+str(permode*2)+"$")
+        plot(t2[:,1], sp2[:,1], label="$k = "+str(1)+"$")
         plot(t2[:,2], sp2[:,2], label="$k = "+str(2)+"$")
         plot(t2[:,11], sp2[:,11], label="$k = "+str(11)+"$")
         ylim(sp2.max()*1.e-5, sp2.max())
